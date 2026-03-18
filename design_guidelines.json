@@ -1,0 +1,248 @@
+{
+  "design_system": {
+    "brand_identity": {
+      "name": "Niveli",
+      "core_values": ["Stoic", "Essential", "Elegant", "Clarity"],
+      "visual_style": "Classical Minimalism",
+      "inspiration": "Greek Statue / Golden Age"
+    },
+    "colors": {
+      "primary": "#F5C518",
+      "primary_light": "#FFD54F",
+      "secondary": "#1A2E1A",
+      "secondary_light": "#2C4C2C",
+      "background": "#FEFCF5",
+      "surface": "#FFFFFF",
+      "surface_highlight": "#FFFDE7",
+      "text": {
+        "primary": "#1A2E1A",
+        "secondary": "#4A5D4A",
+        "muted": "#8C9E8C",
+        "inverse": "#FEFCF5"
+      },
+      "status": {
+        "success": "#388E3C",
+        "warning": "#FBC02D",
+        "error": "#D32F2F",
+        "info": "#1976D2"
+      },
+      "border": "rgba(26, 46, 26, 0.1)"
+    },
+    "typography": {
+      "font_family": {
+        "serif": "System Serif (Georgia on iOS, serif on Android)",
+        "sans": "System Sans-Serif (SF Pro on iOS, Roboto on Android)"
+      },
+      "sizes": {
+        "xs": 12,
+        "s": 14,
+        "m": 16,
+        "l": 20,
+        "xl": 24,
+        "xxl": 32,
+        "display": 48,
+        "giant": 64
+      },
+      "weights": {
+        "regular": "400",
+        "medium": "500",
+        "bold": "700",
+        "black": "900"
+      },
+      "line_heights": {
+        "tight": 1.1,
+        "normal": 1.5,
+        "relaxed": 1.8
+      }
+    },
+    "spacing": {
+      "xs": 4,
+      "s": 8,
+      "m": 16,
+      "l": 24,
+      "xl": 32,
+      "xxl": 48,
+      "section": 64
+    },
+    "layout": {
+      "screen_padding": 24,
+      "max_width": 600,
+      "radius": {
+        "s": 8,
+        "m": 16,
+        "l": 24,
+        "full": 9999
+      }
+    },
+    "shadows": {
+      "soft": {
+        "shadowColor": "#1A2E1A",
+        "shadowOffset": { "width": 0, "height": 4 },
+        "shadowOpacity": 0.05,
+        "shadowRadius": 12,
+        "elevation": 2
+      },
+      "floating": {
+        "shadowColor": "#F5C518",
+        "shadowOffset": { "width": 0, "height": 8 },
+        "shadowOpacity": 0.2,
+        "shadowRadius": 24,
+        "elevation": 6
+      }
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": {
+        "backgroundColor": "#F5C518",
+        "borderRadius": 9999,
+        "paddingVertical": 16,
+        "paddingHorizontal": 32,
+        "alignItems": "center",
+        "justifyContent": "center",
+        "textStyle": {
+          "color": "#1A2E1A",
+          "fontSize": 18,
+          "fontWeight": "700",
+          "letterSpacing": 0.5
+        }
+      },
+      "secondary": {
+        "backgroundColor": "transparent",
+        "borderWidth": 1.5,
+        "borderColor": "#1A2E1A",
+        "borderRadius": 9999,
+        "paddingVertical": 14,
+        "paddingHorizontal": 30,
+        "alignItems": "center",
+        "justifyContent": "center",
+        "textStyle": {
+          "color": "#1A2E1A",
+          "fontSize": 16,
+          "fontWeight": "600"
+        }
+      },
+      "ghost": {
+        "backgroundColor": "transparent",
+        "paddingVertical": 12,
+        "paddingHorizontal": 24,
+        "textStyle": {
+          "color": "#4A5D4A",
+          "fontSize": 14,
+          "fontWeight": "500",
+          "textDecorationLine": "underline"
+        }
+      },
+      "quick_add": {
+        "width": 72,
+        "height": 72,
+        "borderRadius": 36,
+        "backgroundColor": "#FEFCF5",
+        "borderWidth": 1,
+        "borderColor": "rgba(26, 46, 26, 0.1)",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "shadow": "soft"
+      }
+    },
+    "cards": {
+      "stat": {
+        "backgroundColor": "#FFFFFF",
+        "borderRadius": 24,
+        "padding": 24,
+        "width": "100%",
+        "shadow": "soft",
+        "borderWidth": 1,
+        "borderColor": "rgba(245, 197, 24, 0.1)"
+      }
+    },
+    "inputs": {
+      "default": {
+        "backgroundColor": "#FEFCF5",
+        "borderRadius": 12,
+        "borderWidth": 1,
+        "borderColor": "rgba(26, 46, 26, 0.2)",
+        "padding": 16,
+        "fontSize": 18,
+        "color": "#1A2E1A",
+        "width": "100%"
+      },
+      "huge_currency": {
+        "backgroundColor": "transparent",
+        "borderWidth": 0,
+        "fontSize": 48,
+        "fontWeight": "900",
+        "textAlign": "center",
+        "color": "#1A2E1A"
+      }
+    }
+  },
+  "screens": {
+    "Home": {
+      "structure": "SafeAreaView > ScrollView > Header(Streak) > Main(DailyAllowance) > Actions(QuickAdd) > Footer(MonthStats)",
+      "key_elements": [
+        "Daily Allowance Display (Hero): Huge Serif Font",
+        "Remaining Today: Calculated dynamically",
+        "Quick Add Buttons: +10, +20, +50 (Circular)",
+        "Spent Nothing Button: Text Button at bottom"
+      ]
+    },
+    "AddExpense": {
+      "structure": "SafeAreaView > KeyboardAvoidingView > Header(Back) > Main(Input) > Actions(Save)",
+      "key_elements": [
+        "Manual Input: Auto-focus",
+        "Numpad compatible",
+        "Big Save Button"
+      ]
+    },
+    "InitialSetup": {
+      "structure": "SafeAreaView > Pager/Form > Logo > Input(Income) > Input(FixedExpenses) > Button(Start)",
+      "key_elements": [
+        "Brand Logo Centered",
+        "Welcoming Text",
+        "Simple Steps"
+      ]
+    }
+  },
+  "assets": {
+    "logos": {
+      "primary": "https://customer-assets.emergentagent.com/job_139070e7-7fa6-4876-a39e-d250ffee7d34/artifacts/3igeaslg_Niveli%20LOGO%201.png",
+      "icon": "https://customer-assets.emergentagent.com/job_139070e7-7fa6-4876-a39e-d250ffee7d34/artifacts/5084mvi5_Niveli%20LOGO%203.png",
+      "dark": "https://customer-assets.emergentagent.com/job_139070e7-7fa6-4876-a39e-d250ffee7d34/artifacts/bgf3xt5q_LOGO%20NIVELI%20%28Sem%20fundo%29.png"
+    },
+    "icons_library": "@expo/vector-icons (Ionicons or MaterialIcons)",
+    "images": []
+  },
+  "tech_stack_rules": {
+    "framework": "React Native (Expo)",
+    "styling": "StyleSheet (NOT Tailwind/ClassName)",
+    "navigation": "expo-router",
+    "state": "React Context or Local State (Minimal)",
+    "storage": "AsyncStorage (for Device ID/Cache) + MongoDB (Backend)",
+    "animations": "react-native-reanimated (LayoutAnimations)"
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: This is a React Native project. DO NOT use HTML tags (div, span, h1). Use <View>, <Text>, <Pressable>, <ScrollView>.",
+    "CRITICAL: DO NOT use 'className' or Tailwind classes. They are NOT configured. Use `style={styles.container}` and `StyleSheet.create({})`.",
+    "CRITICAL: Adhere to the 'Classical Minimalism' theme. Use the exact hex codes provided.",
+    "NAVIGATION: Use `expo-router`. File based routing in `app/` directory.",
+    "ICONS: Use `<Ionicons name='...' size={24} color={theme.colors.text.primary} />` from `@expo/vector-icons`.",
+    "FONTS: Use system fonts but style them effectively. 'serif' for headings, 'sans-serif' for body.",
+    "DATA-TESTID: Add `testID` prop to all interactive elements (React Native uses `testID` not `data-testid`).",
+    "BACKEND: Connect to the Python FastAPI backend provided in `/app/backend`.",
+    "MVP SCOPE: Implement ONLY the 3 screens requested. Do not add charts or categories."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": {
+    "react_native_specifics": [
+      "Use SafeAreaView from 'react-native-safe-area-context' for screen containers.",
+      "Use KeyboardAvoidingView behavior='padding' for forms.",
+      "Use StatusBar from 'expo-status-bar' with style='dark'.",
+      "Touchable elements must have a minimum dimension of 44x44 points."
+    ],
+    "code_style": [
+      "Use Functional Components with Hooks.",
+      "Keep styles in the same file as the component (colocated) using StyleSheet.create.",
+      "Use TypeScript interfaces for props."
+    ]
+  }
+}
