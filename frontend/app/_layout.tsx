@@ -1,26 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-
-// Set notification handler for foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 export default function RootLayout() {
-  useEffect(() => {
-    // Request notification permissions on mount
-    if (Platform.OS !== 'web') {
-      Notifications.requestPermissionsAsync();
-    }
-  }, []);
-
   return (
     <>
       <StatusBar style="dark" />

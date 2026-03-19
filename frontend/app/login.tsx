@@ -5,10 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -19,7 +16,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleEmailAuth = async () => {
     if (!email.trim() || !password.trim()) {
@@ -30,93 +26,50 @@ export default function LoginScreen() {
       Alert.alert('Atenção', 'Preencha seu nome.');
       return;
     }
+    if (password.length < 6) {
+      Alert.alert('Atenção', 'A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
     setLoading(true);
     try {
       const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
       const body = mode === 'register'
-        ? { email: email.trim(), password, name: name.trim() }
-        : { email: email.trim(), password };
+        ? { email: email.trim().toLowerCase(), password, name: name.trim() }
+        : { email: email.trim().toLowerCase(), password };
+
       const res = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+
       const data = await res.json();
+
       if (!res.ok) {
         Alert.alert('Erro', data.detail || 'Falha na autenticação');
         return;
       }
+
+      // Save auth data
       await AsyncStorage.setItem('niveli_auth_token', data.session_token);
       await AsyncStorage.setItem('niveli_device_id', data.user_id);
       await AsyncStorage.setItem('niveli_user_name', data.name || '');
+
       // Check if profile exists
       const profileRes = await fetch(`${BACKEND_URL}/api/device/${data.user_id}/profile`);
       const profileData = await profileRes.json();
+
       if (profileData.exists) {
         router.replace('/(tabs)');
       } else {
         router.replace('/setup');
       }
     } catch (e) {
-      Alert.alert('Erro', 'Falha na conexão.');
+      console.error('Auth error:', e);
+      Alert.alert('Erro', 'Falha na conexão. Verifique sua internet.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    setGoogleLoading(true);
-    try {
-      if (Platform.OS === 'web') {
-        // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-        const redirectUrl = window.location.origin;
-        window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-        return;
-      }
-      // Native: use WebBrowser
-      const redirectUrl = Linking.createURL('/');
-      const result = await WebBrowser.openAuthSessionAsync(
-        `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`,
-        redirectUrl
-      );
-      if (result.type === 'success' && result.url) {
-        const hash = result.url.split('#')[1] || '';
-        const sessionId = hash.split('session_id=')[1]?.split('&')[0];
-        if (sessionId) {
-          await processGoogleSession(sessionId);
-        }
-      }
-    } catch (e) {
-      Alert.alert('Erro', 'Falha no login com Google.');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  const processGoogleSession = async (sessionId: string) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        Alert.alert('Erro', data.detail || 'Falha no Google Auth');
-        return;
-      }
-      await AsyncStorage.setItem('niveli_auth_token', data.session_token);
-      await AsyncStorage.setItem('niveli_device_id', data.user_id);
-      await AsyncStorage.setItem('niveli_user_name', data.name || '');
-      const profileRes = await fetch(`${BACKEND_URL}/api/device/${data.user_id}/profile`);
-      const profileData = await profileRes.json();
-      if (profileData.exists) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/setup');
-      }
-    } catch (e) {
-      Alert.alert('Erro', 'Falha na conexão.');
     }
   };
 
@@ -136,25 +89,6 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>
             {mode === 'login' ? 'Entre na sua conta' : 'Crie sua conta'}
           </Text>
-
-          {/* Google Auth */}
-          <TouchableOpacity testID="google-login-button" style={styles.googleBtn} onPress={handleGoogleAuth} disabled={googleLoading} activeOpacity={0.8}>
-            {googleLoading ? (
-              <ActivityIndicator size="small" color="#1A2E1A" />
-            ) : (
-              <>
-                <Ionicons name="logo-google" size={20} color="#1A2E1A" />
-                <Text style={styles.googleBtnText}>Continuar com Google</Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>ou</Text>
-            <View style={styles.dividerLine} />
-          </View>
 
           {/* Email Form */}
           <View style={styles.form}>
@@ -178,11 +112,12 @@ export default function LoginScreen() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
             <TextInput
               testID="password-input"
               style={styles.inputField}
-              placeholder="Senha"
+              placeholder="Senha (mínimo 6 caracteres)"
               placeholderTextColor="#8C9E8C"
               value={password}
               onChangeText={setPassword}
@@ -197,12 +132,25 @@ export default function LoginScreen() {
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text style={styles.primaryBtnText}>
-              {loading ? 'Carregando...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
-            </Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#1A2E1A" />
+            ) : (
+              <Text style={styles.primaryBtnText}>
+                {mode === 'login' ? 'Entrar' : 'Criar conta'}
+              </Text>
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity testID="toggle-mode-button" style={styles.toggleLink} onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
+          <TouchableOpacity 
+            testID="toggle-mode-button" 
+            style={styles.toggleLink} 
+            onPress={() => {
+              setMode(mode === 'login' ? 'register' : 'login');
+              setName('');
+              setEmail('');
+              setPassword('');
+            }}
+          >
             <Text style={styles.toggleText}>
               {mode === 'login' ? 'Não tem conta? ' : 'Já tem conta? '}
               <Text style={styles.toggleBold}>{mode === 'login' ? 'Criar conta' : 'Entrar'}</Text>
@@ -225,24 +173,14 @@ const styles = StyleSheet.create({
     fontSize: 36, fontWeight: '700', color: '#1A2E1A', textAlign: 'center', marginBottom: 8,
   },
   subtitle: { fontSize: 16, color: '#4A5D4A', textAlign: 'center', marginBottom: 32 },
-  googleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#FFFFFF', borderRadius: 9999, paddingVertical: 16,
-    borderWidth: 1, borderColor: 'rgba(26,46,26,0.15)',
-    shadowColor: '#1A2E1A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
-  },
-  googleBtnText: { fontSize: 16, fontWeight: '600', color: '#1A2E1A' },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 24 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(26,46,26,0.12)' },
-  dividerText: { paddingHorizontal: 16, fontSize: 14, color: '#8C9E8C' },
-  form: { gap: 12, marginBottom: 20 },
+  form: { gap: 12, marginBottom: 24 },
   inputField: {
     backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(26,46,26,0.12)',
     padding: 16, fontSize: 16, color: '#1A2E1A',
   },
   primaryBtn: {
     backgroundColor: '#F5C518', borderRadius: 9999, paddingVertical: 18,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', minHeight: 56,
     shadowColor: '#F5C518', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6,
   },
   btnDisabled: { opacity: 0.6 },

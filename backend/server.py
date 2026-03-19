@@ -9,7 +9,6 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional
 import uuid
-import httpx
 import bcrypt
 from datetime import datetime, timezone, timedelta
 import calendar
@@ -36,9 +35,6 @@ class RegisterInput(BaseModel):
 class LoginInput(BaseModel):
     email: str
     password: str
-
-class GoogleAuthInput(BaseModel):
-    session_id: str
 
 class SetupInput(BaseModel):
     device_id: str
@@ -164,42 +160,6 @@ async def login(input_data: LoginInput):
         "created_at": now,
     })
     return {"user_id": user["user_id"], "session_token": session_token, "name": user["name"], "email": user["email"]}
-
-@api_router.post("/auth/google")
-async def google_auth(input_data: GoogleAuthInput):
-    async with httpx.AsyncClient() as client_http:
-        resp = await client_http.get(
-            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-            headers={"X-Session-ID": input_data.session_id},
-            timeout=10,
-        )
-    if resp.status_code != 200:
-        raise HTTPException(status_code=401, detail="Sessão Google inválida")
-    google_data = resp.json()
-    email = google_data["email"].lower().strip()
-    user = await db.users.find_one({"email": email}, {"_id": 0})
-    now = datetime.now(timezone.utc).isoformat()
-    if not user:
-        user_id = _generate_user_id()
-        await db.users.insert_one({
-            "user_id": user_id,
-            "email": email,
-            "name": google_data.get("name", ""),
-            "password_hash": "",
-            "picture": google_data.get("picture", ""),
-            "created_at": now,
-        })
-    else:
-        user_id = user["user_id"]
-        await db.users.update_one({"user_id": user_id}, {"$set": {"name": google_data.get("name", user["name"]), "picture": google_data.get("picture", "")}})
-    session_token = _generate_session_token()
-    await db.user_sessions.insert_one({
-        "user_id": user_id,
-        "session_token": session_token,
-        "expires_at": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
-        "created_at": now,
-    })
-    return {"user_id": user_id, "session_token": session_token, "name": google_data.get("name", ""), "email": email}
 
 @api_router.get("/auth/me")
 async def get_me(request: Request):
