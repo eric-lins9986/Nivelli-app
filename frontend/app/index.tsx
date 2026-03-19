@@ -26,7 +26,7 @@ export default function Index() {
       const data = await res.json();
 
       if (data.exists) {
-        router.replace('/home');
+        router.replace('/(tabs)');
       } else {
         router.replace('/setup');
       }

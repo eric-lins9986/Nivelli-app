@@ -1,15 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-  Image,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,11 +13,33 @@ export default function SetupScreen() {
   const router = useRouter();
   const [income, setIncome] = useState('');
   const [fixedExpenses, setFixedExpenses] = useState('');
+  const [balance, setBalance] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
+  useEffect(() => {
+    loadExisting();
+  }, []);
+
+  const loadExisting = async () => {
+    try {
+      const deviceId = await AsyncStorage.getItem('niveli_device_id');
+      if (!deviceId) return;
+      const res = await fetch(`${BACKEND_URL}/api/device/${deviceId}/profile`);
+      const data = await res.json();
+      if (data.exists) {
+        setIsEdit(true);
+        setIncome(String(data.income));
+        setFixedExpenses(String(data.fixed_expenses));
+        setBalance(String(data.current_balance || ''));
+      }
+    } catch (e) { /* first time */ }
+  };
 
   const handleSave = async () => {
     const incomeNum = parseFloat(income.replace(',', '.'));
     const expensesNum = parseFloat(fixedExpenses.replace(',', '.'));
+    const balanceNum = balance ? parseFloat(balance.replace(',', '.')) : null;
 
     if (isNaN(incomeNum) || incomeNum <= 0) {
       Alert.alert('Atenção', 'Informe uma renda válida.');
@@ -35,26 +49,26 @@ export default function SetupScreen() {
       Alert.alert('Atenção', 'Informe um valor válido para despesas fixas.');
       return;
     }
-    if (expensesNum >= incomeNum) {
-      Alert.alert('Atenção', 'Suas despesas fixas devem ser menores que sua renda.');
-      return;
-    }
 
     setSaving(true);
     try {
       const deviceId = await AsyncStorage.getItem('niveli_device_id');
+      const body: Record<string, unknown> = {
+        device_id: deviceId,
+        income: incomeNum,
+        fixed_expenses: expensesNum,
+      };
+      if (balanceNum !== null && !isNaN(balanceNum)) {
+        body.current_balance = balanceNum;
+      }
       const res = await fetch(`${BACKEND_URL}/api/device/setup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          device_id: deviceId,
-          income: incomeNum,
-          fixed_expenses: expensesNum,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (res.ok) {
-        router.replace('/home');
+        router.replace('/(tabs)');
       } else {
         Alert.alert('Erro', 'Não foi possível salvar. Tente novamente.');
       }
@@ -71,10 +85,7 @@ export default function SetupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.logoContainer}>
             <Image
               source={{ uri: 'https://customer-assets.emergentagent.com/job_139070e7-7fa6-4876-a39e-d250ffee7d34/artifacts/5084mvi5_Niveli%20LOGO%203.png' }}
@@ -83,9 +94,11 @@ export default function SetupScreen() {
             />
           </View>
 
-          <Text style={styles.title}>Bem-vindo ao Niveli</Text>
+          <Text style={styles.title}>{isEdit ? 'Editar perfil' : 'Bem-vindo ao Niveli'}</Text>
           <Text style={styles.subtitle}>
-            Vamos configurar seu orçamento mensal para você saber quanto pode gastar por dia.
+            {isEdit
+              ? 'Atualize seus dados financeiros.'
+              : 'Vamos configurar seu orçamento mensal para você saber quanto pode gastar por dia.'}
           </Text>
 
           <View style={styles.form}>
@@ -117,8 +130,24 @@ export default function SetupScreen() {
               />
             </View>
 
+            <Text style={styles.label}>Saldo atual na conta</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.currency}>R$</Text>
+              <TextInput
+                testID="balance-input"
+                style={styles.input}
+                placeholder="3.000"
+                placeholderTextColor="#8C9E8C"
+                keyboardType="numeric"
+                value={balance}
+                onChangeText={setBalance}
+              />
+            </View>
+
             <Text style={styles.hint}>
-              Inclua aluguel, contas, assinaturas e outros gastos recorrentes.
+              {isEdit
+                ? 'O saldo será utilizado para calcular quanto pode gastar por dia.'
+                : 'Inclua aluguel, contas, assinaturas e outros gastos recorrentes.'}
             </Text>
           </View>
 
@@ -130,9 +159,19 @@ export default function SetupScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>
-              {saving ? 'Salvando...' : 'Começar'}
+              {saving ? 'Salvando...' : isEdit ? 'Salvar' : 'Começar'}
             </Text>
           </TouchableOpacity>
+
+          {isEdit && (
+            <TouchableOpacity
+              testID="setup-back-button"
+              style={styles.backLink}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backLinkText}>Voltar</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -140,99 +179,32 @@ export default function SetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#FEFCF5',
-  },
-  flex: {
-    flex: 1,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    justifyContent: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
+  safe: { flex: 1, backgroundColor: '#FEFCF5' },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40, justifyContent: 'center' },
+  logoContainer: { alignItems: 'center', marginBottom: 24 },
+  logo: { width: 100, height: 100, borderRadius: 50 },
   title: {
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#1A2E1A',
-    textAlign: 'center',
-    marginBottom: 12,
+    fontSize: 32, fontWeight: '700', color: '#1A2E1A', textAlign: 'center', marginBottom: 12,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#4A5D4A',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  form: {
-    marginBottom: 32,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A2E1A',
-    marginBottom: 8,
-    marginTop: 20,
-  },
+  subtitle: { fontSize: 16, color: '#4A5D4A', textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  form: { marginBottom: 32 },
+  label: { fontSize: 14, fontWeight: '600', color: '#1A2E1A', marginBottom: 8, marginTop: 20 },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(26, 46, 26, 0.12)',
-    paddingHorizontal: 16,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF',
+    borderRadius: 16, borderWidth: 1, borderColor: 'rgba(26, 46, 26, 0.12)', paddingHorizontal: 16,
   },
-  currency: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A2E1A',
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 18,
-    color: '#1A2E1A',
-    paddingVertical: 16,
-  },
-  hint: {
-    fontSize: 13,
-    color: '#8C9E8C',
-    marginTop: 12,
-    lineHeight: 18,
-  },
+  currency: { fontSize: 18, fontWeight: '700', color: '#1A2E1A', marginRight: 8 },
+  input: { flex: 1, fontSize: 18, color: '#1A2E1A', paddingVertical: 16 },
+  hint: { fontSize: 13, color: '#8C9E8C', marginTop: 12, lineHeight: 18 },
   button: {
-    backgroundColor: '#F5C518',
-    borderRadius: 9999,
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#F5C518',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 6,
+    backgroundColor: '#F5C518', borderRadius: 9999, paddingVertical: 18,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#F5C518', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A2E1A',
-    letterSpacing: 0.5,
-  },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { fontSize: 18, fontWeight: '700', color: '#1A2E1A', letterSpacing: 0.5 },
+  backLink: { marginTop: 16, alignItems: 'center', paddingVertical: 12 },
+  backLinkText: { fontSize: 16, color: '#4A5D4A', textDecorationLine: 'underline' },
 });
