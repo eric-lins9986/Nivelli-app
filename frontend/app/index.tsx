@@ -1,16 +1,46 @@
-import { Text, View, StyleSheet, Image } from "react-native";
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 
-const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function Index() {
-  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkSetup();
+  }, []);
+
+  const checkSetup = async () => {
+    try {
+      let deviceId = await AsyncStorage.getItem('niveli_device_id');
+      if (!deviceId) {
+        deviceId = Crypto.randomUUID();
+        await AsyncStorage.setItem('niveli_device_id', deviceId);
+      }
+
+      const res = await fetch(`${BACKEND_URL}/api/device/${deviceId}/profile`);
+      const data = await res.json();
+
+      if (data.exists) {
+        router.replace('/home');
+      } else {
+        router.replace('/setup');
+      }
+    } catch (e) {
+      console.error('Error checking setup:', e);
+      router.replace('/setup');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../assets/images/app-image.png")}
-        style={styles.image}
-      />
+      <ActivityIndicator size="large" color="#F5C518" />
     </View>
   );
 }
@@ -18,13 +48,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0c0c0c",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
+    backgroundColor: '#FEFCF5',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
