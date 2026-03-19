@@ -4,76 +4,91 @@
 Niveli é um app minimalista de decisão financeira que responde: **"Quanto posso gastar hoje com segurança?"**
 
 ## Stack Técnico
-- **Frontend**: React Native (Expo SDK 54) com expo-router
-- **Backend**: FastAPI (Python) 
+- **Frontend**: React Native (Expo SDK 54) com expo-router e tab navigation
+- **Backend**: FastAPI (Python)
 - **Banco de dados**: MongoDB
 - **Autenticação**: Nenhuma (dados por dispositivo via device_id)
 - **Moeda**: BRL (R$) apenas
 - **Idioma**: Português (Brasil)
 
-## Telas
+## Telas (7 telas total)
 
-### 1. Tela de Setup (`/setup`)
-- Input de renda mensal (R$)
-- Input de despesas fixas mensais (R$)
-- Botão "Começar"
-- Logo Niveli centralizada
+### Navegação por Tabs (4 tabs)
 
-### 2. Tela Home (`/home`)
-- **Hero**: "Você pode gastar hoje: R$ X" (destaque principal)
-- Restante no mês: R$ X
-- Dias restantes: X
-- Contador de streak (dias consecutivos com atividade)
-- Botão "Adicionar gasto" (primário)
-- Botão "Não gastei nada hoje" (secundário)
-- Ícone de configurações (engrenagem)
-- Mensagens de feedback (economia/aviso)
+#### Tab 1: Início (`/(tabs)/index`)
+- Saldo atual com botão "Atualizar"
+- Health status badge (🟢 Saudável / 🟡 Atenção / 🔴 Crítico)
+- **Hero**: "Você pode gastar hoje: R$ X"
+- Restante no mês / Dias restantes
+- Streak badge
+- Botões: "Adicionar gasto" e "Não gastei nada hoje"
+- Ícone de configurações
 
-### 3. Tela Adicionar Gasto (`/add-expense`)
-- Botões rápidos: +10, +20, +50
-- Campo de input manual
-- Botão "Salvar"
-- Botão voltar
+#### Tab 2: Contas Fixas (`/(tabs)/fixed-expenses`)
+- Barra de comprometimento da renda (% com indicador 🟢/🔴)
+- Totais: Pago / Pendente
+- Lista de despesas fixas com toggle pago/pendente
+- Adicionar / remover itens
+- Sincroniza com cálculos gerais
+
+#### Tab 3: Linha do Tempo (`/(tabs)/timeline`)
+- Timeline vertical do mês
+- Dias passados: gasto + saldo após
+- Dia atual: destaque
+- Dias futuros: previsão diária + saldo projetado + alerta se zerar
+
+#### Tab 4: Streak (`/(tabs)/streak`)
+- Stats: Streak atual, Melhor streak, Dias ativos
+- Calendário mensal com 🔥 nos dias ativos
+- Legenda visual
+
+### Telas Modal/Stack
+- **Setup** (`/setup`) - Renda, despesas fixas, saldo inicial
+- **Adicionar Gasto** (`/add-expense`) - Botões rápidos +10/+20/+50 + manual
+- **Atualizar Saldo** (`/update-balance`) - Exibe saldo atual + campo novo valor
 
 ## Lógica Principal
 ```
 free_money = income - fixed_expenses
-total_spent = soma de todas despesas do mês atual
-remaining = free_money - total_spent
-days_left = dias_no_mês - dia_atual + 1
-daily_available = remaining / days_left
+daily_available = current_balance / days_left
 ```
-
-## Gamificação
-- Streak: incrementa se usuário registra atividade diariamente
-- Reset de streak se pular um dia
-- Mensagens de feedback baseadas no gasto
+- Adicionar gasto → deduz do current_balance
+- Atualizar saldo → recalcula tudo
+- Adicionar/remover conta fixa → sincroniza fixed_expenses total
 
 ## API Endpoints
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| POST | `/api/device/setup` | Criar/atualizar perfil |
+| POST | `/api/device/setup` | Criar/atualizar perfil (com balance) |
 | GET | `/api/device/{id}/profile` | Buscar perfil |
-| POST | `/api/device/{id}/expense` | Adicionar gasto |
+| PUT | `/api/device/{id}/balance` | Atualizar saldo |
+| POST | `/api/device/{id}/expense` | Adicionar gasto (deduz balance) |
 | POST | `/api/device/{id}/no-spend` | Registrar dia sem gasto |
-| GET | `/api/device/{id}/summary` | Resumo financeiro completo |
+| GET | `/api/device/{id}/summary` | Resumo com balance + health |
+| POST | `/api/device/{id}/fixed-expenses` | Criar conta fixa |
+| GET | `/api/device/{id}/fixed-expenses` | Listar com totais e health |
+| PATCH | `/api/device/{id}/fixed-expenses/{item}` | Toggle pago/pendente |
+| DELETE | `/api/device/{id}/fixed-expenses/{item}` | Remover conta fixa |
+| GET | `/api/device/{id}/timeline` | Timeline do mês |
+| GET | `/api/device/{id}/streak-calendar` | Calendário de streak |
 
 ## Coleções MongoDB
-- `profiles`: device_id, income, fixed_expenses
+- `profiles`: device_id, income, fixed_expenses, current_balance
 - `expenses`: device_id, amount, date
 - `activities`: device_id, date, type (expense/no_spend)
+- `fixed_expense_items`: device_id, name, amount, is_paid
 
 ## Design System
 - **Primary**: #F5C518 (amarelo dourado)
 - **Text**: #1A2E1A (verde escuro)
 - **Background**: #FEFCF5 (creme)
 - **Surface**: #FFFFFF
-- **Estilo**: Classical Minimalism
+- **Estilo**: Classical Minimalism com tabs
 
 ## Sugestões Futuras (NÃO implementadas)
-- Autenticação com Google
-- Histórico mensal de gastos
+- Autenticação com Google para sync entre dispositivos
+- Histórico mensal comparativo
 - Notificações push diárias
-- Compartilhamento social de streaks
+- Exportar dados (CSV/PDF)
 - Modo escuro
-- **Monetização**: Plano premium com insights AI de gastos (R$9,90/mês)
+- **Monetização**: Plano premium com insights AI (R$9,90/mês)
