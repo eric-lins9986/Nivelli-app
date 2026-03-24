@@ -4,6 +4,10 @@ Nivelli is a full-stack personal finance application designed to help users mana
 
 The core idea is to provide clear financial control and assist users in understanding their balance, expenses, and financial behavior — without requiring advanced financial knowledge.
 
+## 🏗️ Project Type
+
+Full-stack mobile application (MVP)
+
 ## 📸 Preview
 
 ![App Demo](assets/APP%20PREVIEW.gif)
@@ -102,22 +106,26 @@ The system maintains financial consistency by:
 
 ## ▶️ Running the Project
 
-###Backend
+### Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
 python server.py
 
-Frontend
-
+```
+### Frontend
+```bash
 cd frontend
 yarn install
 npx expo start
+```
 
 Then scan the QR code using Expo Go on your mobile device.
 
-🧪 Testing
+---
+
+## 🧪 Testing
 
 The backend includes test files for validating core functionalities:
 
@@ -128,23 +136,28 @@ Financial summaries
 
 Tests are located inside the /backend/tests directory.
 
-📌 Project Status
+---
+
+## 📌 Project Status
 
 This project is currently in development (MVP stage).
 
 Core functionalities are implemented, and improvements are continuously being made.
 
-This project was initially scaffolded with the assistance of AI tools and further developed through manual refinement.
+---
 
-I focused on understanding, adapting, and improving the generated code, ensuring correctness, structure, and scalability.
+## 🤖 AI-assisted Development
 
-The developer focused on:
+This project was initially scaffolded with the assistance of AI tools and later refined through manual development.
 
-Understanding and adapting the generated code
-Debugging and improving system behavior
-Structuring the application and refining features
+I focused on:
+- Understanding and adapting the generated code
+- Debugging and improving system behavior
+- Structuring the application and refining features
 
-📈 Future Improvements
+---
+
+## 📈 Future Improvements
 
 Enhanced financial insights and analytics
 Improved UI/UX experience
@@ -152,9 +165,9 @@ Data persistence improvements
 Authentication system
 Deployment and scalability improvements
 
+---
 
-
-📬 Contact
+## 📬 Contact
 
 Eric Gabriel Lins Nascimento
 📍 São Paulo, Brazil
