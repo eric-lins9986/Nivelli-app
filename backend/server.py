@@ -148,7 +148,7 @@ async def login(input_data: LoginInput):
     if not user:
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
     if not user.get("password_hash"):
-        raise HTTPException(status_code=401, detail="Use o login com Google para esta conta")
+        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
     if not bcrypt.checkpw(input_data.password.encode(), user["password_hash"].encode()):
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
     session_token = _generate_session_token()

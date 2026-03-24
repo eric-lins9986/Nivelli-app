@@ -1,80 +1,103 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Project: Nivelli app
+# Purpose: Ignore unnecessary and sensitive files for version control
 
-# IDE and editors
-.idea/
-.vscode/
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+.envrc
+*token.json*
+*credentials.json*
 
-# Dependencies
+# =========================
+# Python Cache & Compiled
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+frontend/.metro-cache/
+
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Node / Frontend Dependencies
+# =========================
 node_modules/
-/node_modules
-/.pnp
+.pnp
 .pnp.js
-.yarn/install-state.gz
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-next-env.d.ts
-*.tsbuildinfo
-
-# Production builds
-/build
-dist/
-dist
-
-# Environment files (comprehensive coverage)
-
-*token.json*
-*credentials.json*
-
-# Logs and debug files
+# =========================
+# Logs & Reports
+# =========================
+*.log
+coverage/
+htmlcov/
+.pytest_cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-dump.rdb
 
-# System files
+# =========================
+# Build & Distribution
+# =========================
+build/
+dist/
+*.egg-info/
+.next/
+out/
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# System Files
+# =========================
 .DS_Store
-*.pem
+Thumbs.db
 
-# Python
-__pycache__/
-*pyc*
-venv/
-.venv/
-
-# Development tools
-chainlit.md
-.chainlit
+# =========================
+# Testing / Temp
+# =========================
 .ipynb_checkpoints/
-.ac
 
-# Deployment
+# =========================
+# Deployment / Cloud
+# =========================
 .vercel
 
-# Data and databases
+# =========================
+# Data / Local Databases
+# =========================
 agenthub/agents/youtube/db
 
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
+# =========================
+# Archives & Large Files
+# =========================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
 
-# Build caches
-.cache/
-
-# Mobile development
-android-sdk/ 
+# =========================
+# Project Specific
+# =========================
+.emergent/
+memory/
+.cursorignore
+.cursorindexingignore
